@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys,os
+
 doc="""Usage: {me} [options] -c command args..
 
 {me}: A wrapper command to provide an advisory lock, without leaving stale lock files.
@@ -45,6 +46,7 @@ not locked: /tmp/single.py_bin_sleep.flock
 not locked: /tmp/single.py_bin_sleep.flock
 """.format(me=os.path.basename(sys.argv[0]))
 
+from datetime import datetime
 from optparse import OptionParser
 from fcntl import flock,LOCK_SH,LOCK_EX,LOCK_UN,LOCK_NB
 from subprocess import Popen, PIPE
@@ -147,8 +149,9 @@ def wrap(lock_file, cmd_tokens):
     lock=Lock(lock_file)
     gotlock, pid=lock.lock_pid()
     if not gotlock:
-        print >>sys.stderr, 'locked by ', pid, 'exiting:', ' '.join(cmd_tokens)
-        status=1
+        print >>sys.stderr, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), \
+            'locked by ', pid, 'exiting:', ' '.join(cmd_tokens)
+        sys.exit(1)
     else:
         os.execvp(cmd_tokens[0], cmd_tokens)
 
