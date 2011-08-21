@@ -37,13 +37,14 @@ Invocations:
   {me} -s -c long-running-scrit 
 
 Example: $ {me} -c sleep 3 & for x in {{0..6}}; do {me} -s -c sleep; sleep 1; done
-[1] 32567
-locked by 32567: /tmp/single.py_bin_sleep.flock
-locked by 32567: /tmp/single.py_bin_sleep.flock
-locked by 32567: /tmp/single.py_bin_sleep.flock
-[1]+  Done                    {me} sleep 5
-not locked: /tmp/single.py_bin_sleep.flock
-not locked: /tmp/single.py_bin_sleep.flock
+  [1] 32567
+  locked by 32567: /tmp/single.py_bin_sleep.flock
+  locked by 32567: /tmp/single.py_bin_sleep.flock
+  locked by 32567: /tmp/single.py_bin_sleep.flock
+  [1]+  Done                    {me} sleep 5
+  not locked: /tmp/single.py_bin_sleep.flock
+  not locked: /tmp/single.py_bin_sleep.flock
+
 """.format(me=os.path.basename(sys.argv[0]))
 
 from datetime import datetime
