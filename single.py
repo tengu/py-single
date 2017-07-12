@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys,os
+import sys,os, errno
 
 doc="""Usage: {me} [options] -c command args..
 
@@ -68,7 +68,8 @@ class Lock(object):
         try:
             flock(self.lock_fh, LOCK_EX|LOCK_NB)
         except IOError, e:
-            if e.args[0]==11: # Resource temporarily unavailable
+
+            if e.args[0]==errno.EAGAIN: # Resource temporarily unavailable
                 return False
             else:
                 raise
