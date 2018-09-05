@@ -97,7 +97,7 @@ class Lock(object):
 
     def write_pid(self):
         os.ftruncate(self.lock_fh, 0)
-        os.write(self.lock_fh, '%d\n' % os.getpid())
+        os.write(self.lock_fh, b'%d\n' % os.getpid())
         os.fsync(self.lock_fh)
 
     def read_pid(self):
@@ -127,7 +127,7 @@ def default_lock_file(cmd):
     Thus the resolved command executable (without regards to the args) should be used for the name space.
     """
     out,err=Popen(['which', cmd], stdout=PIPE, stderr=PIPE).communicate()
-    cmd_path=out.strip()
+    cmd_path=out.strip().decode()
     if not cmd_path:
         raise CommandNotFound('no such command:', cmd)
     return '/tmp/%s%s.flock' % (os.path.basename(sys.argv[0]), cmd_path.replace('/','_'))
