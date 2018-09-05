@@ -4,7 +4,7 @@ from distutils.core import setup
 setup(
     name = "single",
     version = "0.1.0",
-    python_requires='>2.6',
+    python_requires='>=2.6',
     py_modules = ["single"],
     scripts = ["single.py"],
     license = "LGPL",
