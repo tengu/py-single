@@ -67,7 +67,7 @@ class Lock(object):
         self.lock_fh=os.open(self.lock_file, os.O_CREAT|os.O_RDWR) # read/write without truncate
         try:
             flock(self.lock_fh, LOCK_EX|LOCK_NB)
-        except IOError, e:
+        except IOError as e:
 
             if e.args[0]==errno.EAGAIN: # Resource temporarily unavailable
                 return False
@@ -108,7 +108,7 @@ class Lock(object):
 
         try:
             return int(content.strip())
-        except Exception, e:
+        except Exception as e:
             e.args+=(content, self.lock_file)
             raise
 
@@ -202,7 +202,7 @@ def main():
     
     try:
         lock_file=opt.lock_file or default_lock_file(cmd_tokens[0])
-    except CommandNotFound, e:  # concise message for unresolved command
+    except CommandNotFound as e:  # concise message for unresolved command
         print >>sys.stderr, ' '.join(e.args)
         sys.exit(1)
 
