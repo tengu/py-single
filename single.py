@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import sys,os, errno
 
 doc="""Usage: {me} [options] -c command args..
@@ -140,10 +141,10 @@ def do_status(lock_file):
     lock=Lock(lock_file)
     gotit,pid=lock.lock_pid()
     if gotit:
-        print 'not locked: %s' % (lock_file)
+        print('not locked: %s' % (lock_file))
         return 0
 
-    print 'locked by %d: %s' % (pid, lock_file)
+    print('locked by %d: %s' % (pid, lock_file))
     return 1
 
 def wrap(lock_file, cmd_tokens):
@@ -151,8 +152,8 @@ def wrap(lock_file, cmd_tokens):
     lock=Lock(lock_file)
     gotlock, pid=lock.lock_pid()
     if not gotlock:
-        print >>sys.stderr, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), \
-            'locked by ', pid, 'exiting:', ' '.join(cmd_tokens)
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'locked by ', pid,
+              'exiting:', ' '.join(cmd_tokens), file=sys.stderr)
         sys.exit(1)
     else:
         os.execvp(cmd_tokens[0], cmd_tokens)
@@ -193,17 +194,17 @@ def main():
     (opt, xargs) = parser.parse_args(args_for_me)
 
     if opt.help:
-        print doc
+        print(doc)
         sys.exit(0)
     
     if not cmd_tokens:
-        print doc
+        print(doc)
         sys.exit(1)
     
     try:
         lock_file=opt.lock_file or default_lock_file(cmd_tokens[0])
     except CommandNotFound as e:  # concise message for unresolved command
-        print >>sys.stderr, ' '.join(e.args)
+        print(' '.join(e.args), file=sys.stderr)
         sys.exit(1)
 
     if opt.status:
