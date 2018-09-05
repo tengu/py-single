@@ -50,7 +50,7 @@ Example: $ {me} -c sleep 3 & for x in {{0..6}}; do {me} -s -c sleep; sleep 1; do
 
 from datetime import datetime
 from optparse import OptionParser
-from fcntl import flock,LOCK_SH,LOCK_EX,LOCK_UN,LOCK_NB
+from fcntl import flock,LOCK_SH,LOCK_EX,LOCK_UN,LOCK_NB,F_GETFD,F_SETFD,FD_CLOEXEC,fcntl
 from subprocess import Popen, PIPE
 
 class CommandNotFound(Exception): pass
@@ -67,6 +67,11 @@ class Lock(object):
 
         self.lock_fh=os.open(self.lock_file, os.O_CREAT|os.O_RDWR) # read/write without truncate
         try:
+            flags = fcntl(self.lock_fh, F_GETFD, 0)
+            if flags & FD_CLOEXEC:
+                flags &= ~FD_CLOEXEC
+            fcntl(self.lock_fh, F_SETFD, flags)
+
             flock(self.lock_fh, LOCK_EX|LOCK_NB)
         except IOError as e:
 
