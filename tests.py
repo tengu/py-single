@@ -24,25 +24,25 @@ class Test(unittest.TestCase):
         procs = dict()
 
         winner = Popen((self.single_path, '-c', 'sleep', str(self.command_duration)))
-        # sys.stderr.write(str(['winner', winner.pid])+'\n')
         procs[winner.pid] = winner
 
         time.sleep(0.1)
 
         loser = Popen((self.single_path, '-c', 'sleep', str(self.command_duration)))
-        # sys.stderr.write(str(['loser', loser.pid])+'\n')
         procs[loser.pid] = loser
 
         events = []
 
-        while procs:
+        while list(filter(None, procs.values())):
             # xxx make this order deterministic so that tick can be tested reliably.
             for pid, proc in procs.items():
+                if not proc:
+                    continue
                 reaped_id, exit_status = os.waitpid(pid, os.WNOHANG)
-                print 'wait:', (pid, reaped_id, exit_status)
+                print(['wait:', (pid, reaped_id, exit_status)])
                 if reaped_id:
-                    print 'reapted:', reaped_id, exit_status
-                    del procs[reaped_id]
+                    print(['reapted:', reaped_id, exit_status])
+                    procs[reaped_id] = None
                     events.append(('reapted', pid, exit_status))
                 time.sleep(self.poll_interval)
 
