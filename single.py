@@ -66,20 +66,25 @@ class Lock(object):
         """ lock my fh only, without any book-keeping. returns True when lock is obtained. """
 
         self.lock_fh=os.open(self.lock_file, os.O_CREAT|os.O_RDWR) # read/write without truncate
+        self.prepare_fh()
         try:
-            flags = fcntl(self.lock_fh, F_GETFD, 0)
-            if flags & FD_CLOEXEC:
-                flags &= ~FD_CLOEXEC
-            fcntl(self.lock_fh, F_SETFD, flags)
-
             flock(self.lock_fh, LOCK_EX|LOCK_NB)
         except IOError as e:
-
             if e.args[0]==errno.EAGAIN: # Resource temporarily unavailable
                 return False
             else:
                 raise
         return True
+
+    def prepare_fh(self):
+        """ Make sure fh is in good state.
+        Supposedly some version/platform defaults to CLOEXEC,
+        which we don't want.
+        """
+        flags = fcntl(self.lock_fh, F_GETFD, 0)
+        if flags & FD_CLOEXEC:
+            flags &= ~FD_CLOEXEC
+        return fcntl(self.lock_fh, F_SETFD, flags)
 
     def lock(self):
         """ returns True if I got the lock, False otherwise.
@@ -205,7 +210,7 @@ def main():
         sys.exit(0)
     
     if not cmd_tokens:
-        print(doc)
+        print("See `{} --help` for detail.".format(sys.argv[0]))
         sys.exit(1)
     
     try:
