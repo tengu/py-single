@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import sys,os, errno
 
 doc="""Usage: {me} [options] -c command args..
@@ -49,7 +50,7 @@ Example: $ {me} -c sleep 3 & for x in {{0..6}}; do {me} -s -c sleep; sleep 1; do
 
 from datetime import datetime
 from optparse import OptionParser
-from fcntl import flock,LOCK_SH,LOCK_EX,LOCK_UN,LOCK_NB
+from fcntl import flock,LOCK_SH,LOCK_EX,LOCK_UN,LOCK_NB,F_GETFD,F_SETFD,FD_CLOEXEC,fcntl
 from subprocess import Popen, PIPE
 
 class CommandNotFound(Exception): pass
@@ -66,8 +67,13 @@ class Lock(object):
 
         self.lock_fh=os.open(self.lock_file, os.O_CREAT|os.O_RDWR) # read/write without truncate
         try:
+            flags = fcntl(self.lock_fh, F_GETFD, 0)
+            if flags & FD_CLOEXEC:
+                flags &= ~FD_CLOEXEC
+            fcntl(self.lock_fh, F_SETFD, flags)
+
             flock(self.lock_fh, LOCK_EX|LOCK_NB)
-        except IOError, e:
+        except IOError as e:
 
             if e.args[0]==errno.EAGAIN: # Resource temporarily unavailable
                 return False
@@ -96,7 +102,7 @@ class Lock(object):
 
     def write_pid(self):
         os.ftruncate(self.lock_fh, 0)
-        os.write(self.lock_fh, '%d\n' % os.getpid())
+        os.write(self.lock_fh, b'%d\n' % os.getpid())
         os.fsync(self.lock_fh)
 
     def read_pid(self):
@@ -108,7 +114,7 @@ class Lock(object):
 
         try:
             return int(content.strip())
-        except Exception, e:
+        except Exception as e:
             e.args+=(content, self.lock_file)
             raise
 
@@ -127,7 +133,7 @@ def default_lock_file(cmd):
     """
     # todo: stop introspecting; just use the command as given.
     out,err=Popen(['which', cmd], stdout=PIPE, stderr=PIPE).communicate()
-    cmd_path=out.strip()
+    cmd_path=out.strip().decode()
     if not cmd_path:
         raise CommandNotFound('no such command:', cmd)
     # todo: consider just normalizing the command and full argv.
@@ -142,10 +148,10 @@ def do_status(lock_file):
     lock=Lock(lock_file)
     gotit,pid=lock.lock_pid()
     if gotit:
-        print 'not locked: %s' % (lock_file)
+        print('not locked: %s' % (lock_file))
         return 0
 
-    print 'locked by %d: %s' % (pid, lock_file)
+    print('locked by %d: %s' % (pid, lock_file))
     return 1
 
 def wrap(lock_file, cmd_tokens):
@@ -153,8 +159,8 @@ def wrap(lock_file, cmd_tokens):
     lock=Lock(lock_file)
     gotlock, pid=lock.lock_pid()
     if not gotlock:
-        print >>sys.stderr, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), \
-            'locked by ', pid, 'exiting:', ' '.join(cmd_tokens)
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'locked by ', pid,
+              'exiting:', ' '.join(cmd_tokens), file=sys.stderr)
         sys.exit(1)
     else:
         os.execvp(cmd_tokens[0], cmd_tokens)
@@ -195,17 +201,17 @@ def main():
     (opt, xargs) = parser.parse_args(args_for_me)
 
     if opt.help:
-        print doc
+        print(doc)
         sys.exit(0)
     
     if not cmd_tokens:
-        print doc
+        print(doc)
         sys.exit(1)
     
     try:
         lock_file=opt.lock_file or default_lock_file(cmd_tokens[0])
-    except CommandNotFound, e:  # concise message for unresolved command
-        print >>sys.stderr, ' '.join(e.args)
+    except CommandNotFound as e:  # concise message for unresolved command
+        print(' '.join(e.args), file=sys.stderr)
         sys.exit(1)
 
     if opt.status:
