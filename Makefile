@@ -5,6 +5,9 @@ README:
 	./single.py -h > $@
 
 test:
+	nosetests -s
+
+test-basic:
 	./single.py -c sleep 5 &
 	./single.py -c sleep 3
 

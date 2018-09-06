@@ -125,10 +125,12 @@ def default_lock_file(cmd):
     most common case. envisioned usage case is a custom script that does some job processing.
     Thus the resolved command executable (without regards to the args) should be used for the name space.
     """
+    # todo: stop introspecting; just use the command as given.
     out,err=Popen(['which', cmd], stdout=PIPE, stderr=PIPE).communicate()
     cmd_path=out.strip()
     if not cmd_path:
         raise CommandNotFound('no such command:', cmd)
+    # todo: consider just normalizing the command and full argv.
     return '/tmp/%s%s.flock' % (os.path.basename(sys.argv[0]), cmd_path.replace('/','_'))
 
 #### cmd
