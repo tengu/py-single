@@ -63,7 +63,7 @@ class Lock(object):
         self.lock_fh=None
 
     def get_lock(self):
-        """ lock my fh only, witout any book-keeping. returns True when lock is obtained. """
+        """ lock my fh only, without any book-keeping. returns True when lock is obtained. """
 
         self.lock_fh=os.open(self.lock_file, os.O_CREAT|os.O_RDWR) # read/write without truncate
         try:
