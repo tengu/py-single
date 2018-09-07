@@ -3,7 +3,7 @@ from distutils.core import setup
     
 setup(
     name = "single",
-    version = "0.1.0",
+    version = "0.2.0",
     python_requires='>=2.6',
     py_modules = ["single"],
     scripts = ["single.py"],
@@ -21,9 +21,9 @@ setup(
         "Topic :: Utilities",
         ],
     long_description = """
-    Wrap commands with `single` to ensure there is at most single instnace of the command at a time.
-    This comes in handy when periodically invoking potentically long-running commands by cron.
-    `single` avoids the problem of stale lock suffered by lock file approch. Even if the command
+    Wrap a command with `single` to ensure there is at most single instance of the command at a time.
+    This comes in handy when periodically invoking potentially long-running commands by cron.
+    `single` avoids the problem of stale lock suffered by lock file approach. Even if the command
     crashes the lock is cleared.
     """
     )
